@@ -54,7 +54,7 @@ docker run --rm python-ffmpeg-lgpl-test:latest
 
 The FFmpeg build uses the following configuration to ensure LGPL compliance:
 
-- `--enable-version3`: Enable LGPLv3 and GPLv3
+- `--enable-version3`: Enable LGPLv3 licenses (GPLv3 is disabled by --disable-gpl)
 - `--disable-gpl`: Disable GPL components
 - `--disable-nonfree`: Disable non-free components
 
