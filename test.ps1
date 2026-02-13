@@ -31,6 +31,14 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
+docker run --rm python-ffmpeg-lgpl:latest ffmpeg -hide_banner -L
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
+    exit 1
+}
+
 Write-Host "`n✓ FFmpeg is working correctly" -ForegroundColor Green
 
 # Verify LGPL configuration

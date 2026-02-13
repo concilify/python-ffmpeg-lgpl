@@ -17,10 +17,10 @@ print(f"✓ PyAV version: {av.__version__}")
 
 # Check FFmpeg version
 try:
-    ffmpeg_version = av.FFmpegInfo().version
-    print(f"✓ FFmpeg version: {ffmpeg_version}")
+    print(f"FFmpeg version (via PyAV): {av.ffmpeg_version_info}")
 except Exception as e:
-    print(f"! Could not get FFmpeg version: {e}")
+    print(f"✗ Could not get FFmpeg version: {e}")
+    sys.exit(1)
 
 # Test creating a container (without actually opening a file)
 try:

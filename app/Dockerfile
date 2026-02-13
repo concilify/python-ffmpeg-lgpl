@@ -42,7 +42,8 @@ RUN ./configure \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libass \
-    --enable-libtheora
+    --enable-libtheora \
+    --extra-version="concilify-lgpl"
 
 RUN make -j$(nproc)
 RUN make install

@@ -5,10 +5,11 @@ FROM python-ffmpeg-lgpl:latest
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PyAV
-RUN pip install --no-cache-dir av
+RUN pip install --no-binary av av
 
 # Copy test script
 COPY test_pyav.py /app/test_pyav.py
