@@ -4,7 +4,6 @@ FROM python:3.11-slim as builder
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    git \
     pkg-config \
     yasm \
     nasm \
@@ -14,17 +13,23 @@ RUN apt-get update && apt-get install -y \
     libvorbis-dev \
     libass-dev \
     libtheora-dev \
-    wget \
+    curl \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /build
 
-# Clone FFmpeg source from GitHub
-RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ffmpeg
+# Download and extract FFmpeg source
+ARG FFMPEG_VERSION=7.1
+
+RUN curl -fsSL https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz \
+    -o ffmpeg.tar.xz \
+    && tar -xJf ffmpeg.tar.xz \
+    && rm ffmpeg.tar.xz
 
 # Build FFmpeg with LGPL configuration
-WORKDIR /build/ffmpeg
+WORKDIR /build/ffmpeg-${FFMPEG_VERSION}
 RUN ./configure \
     --enable-version3 \
     --disable-gpl \
@@ -37,9 +42,11 @@ RUN ./configure \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libass \
-    --enable-libtheora \
-    && make -j$(nproc) \
-    && make install
+    --enable-libtheora
+
+RUN make -j$(nproc)
+
+RUN make install
 
 # Stage 2: Copy FFmpeg artifacts to Python base image
 FROM python:3.11-slim
@@ -64,9 +71,7 @@ ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:${LD_LIBRARY_PATH}"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 # Verify FFmpeg installation
-RUN ffmpeg -version && ffprobe -version
+RUN ffmpeg -version -buildconf && ffprobe -version
 
 # Set working directory
 WORKDIR /app
-
-CMD ["/bin/bash"]

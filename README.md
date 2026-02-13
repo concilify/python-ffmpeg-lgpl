@@ -1,4 +1,4 @@
-# ffmpeg-lgpl-docker
+# python-ffmpeg-lgpl
 An LGPL build of FFmpeg packaged as a Docker Image
 
 ## Quick Start

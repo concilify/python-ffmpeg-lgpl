@@ -4,11 +4,10 @@
 
 # Documentation
 *.md
-README.md
-BUILD.md
 
-# Test files
-container.tests/
+# Build artifacts
+*.pyc
+__pycache__/
 
 # Temporary files
 *.log
