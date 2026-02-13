@@ -1,8 +1,10 @@
 # Stage 1: Build FFmpeg from source with LGPL configuration
-FROM python:3.11-slim as builder
+FROM python:3.11-slim-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
+    curl \
+    xz-utils \
     build-essential \
     pkg-config \
     yasm \
@@ -13,8 +15,6 @@ RUN apt-get update && apt-get install -y \
     libvorbis-dev \
     libass-dev \
     libtheora-dev \
-    curl \
-    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -45,33 +45,32 @@ RUN ./configure \
     --enable-libtheora
 
 RUN make -j$(nproc)
-
 RUN make install
 
-# Stage 2: Copy FFmpeg artifacts to Python base image
-FROM python:3.11-slim
+# # Stage 2: Copy FFmpeg artifacts to Python base image
+# FROM python:3.11-slim-bookworm
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libvpx7 \
-    libmp3lame0 \
-    libopus0 \
-    libvorbis0a \
-    libvorbisenc2 \
-    libass9 \
-    libtheora0 \
-    && rm -rf /var/lib/apt/lists/*
+# # Install runtime dependencies
+# RUN apt-get update && apt-get install -y \
+#     libvpx7 \
+#     libmp3lame0 \
+#     libopus0 \
+#     libvorbis0a \
+#     libvorbisenc2 \
+#     libass9 \
+#     libtheora0 \
+#     && rm -rf /var/lib/apt/lists/*
 
-# Copy FFmpeg installation from builder stage
-COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
+# # Copy FFmpeg installation from builder stage
+# COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
 
-# Add FFmpeg to PATH and library path
-ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:${LD_LIBRARY_PATH}"
-ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:${PKG_CONFIG_PATH}"
+# # Add FFmpeg to PATH and library path
+# ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
+# ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
+# ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
-# Verify FFmpeg installation
-RUN ffmpeg -version --buildconf && ffprobe -version
+# # Verify FFmpeg installation
+# RUN ffmpeg -version --buildconf && ffprobe -version
 
-# Set working directory
-WORKDIR /app
+# # Set working directory
+# WORKDIR /app
