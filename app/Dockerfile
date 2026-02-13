@@ -8,15 +8,11 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     yasm \
     nasm \
-    libx264-dev \
-    libx265-dev \
     libvpx-dev \
-    libfdk-aac-dev \
     libmp3lame-dev \
     libopus-dev \
     libvorbis-dev \
     libass-dev \
-    libfreetype6-dev \
     libtheora-dev \
     wget \
     && rm -rf /var/lib/apt/lists/*
@@ -36,15 +32,11 @@ RUN ./configure \
     --enable-shared \
     --enable-pic \
     --prefix=/usr/local/ffmpeg \
-    --enable-libx264 \
-    --enable-libx265 \
     --enable-libvpx \
-    --enable-libfdk-aac \
     --enable-libmp3lame \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libass \
-    --enable-libfreetype \
     --enable-libtheora \
     && make -j$(nproc) \
     && make install
@@ -54,16 +46,12 @@ FROM python:3.11-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
-    libx264-164 \
-    libx265-199 \
     libvpx7 \
-    libfdk-aac2 \
     libmp3lame0 \
     libopus0 \
     libvorbis0a \
     libvorbisenc2 \
     libass9 \
-    libfreetype6 \
     libtheora0 \
     && rm -rf /var/lib/apt/lists/*
 
