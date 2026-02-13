@@ -58,7 +58,26 @@ The FFmpeg build uses the following configuration to ensure LGPL compliance:
 - `--disable-gpl`: Disable GPL components
 - `--disable-nonfree`: Disable non-free components
 
-This ensures that only LGPL-compatible codecs and features are included in the build.
+### Included Codecs (LGPL-compatible)
+
+The build includes the following LGPL-compatible codecs:
+
+- **libvpx**: VP8/VP9 video codec (BSD license)
+- **libmp3lame**: MP3 audio encoder (LGPL license)
+- **libopus**: Opus audio codec (BSD license)
+- **libvorbis**: Vorbis audio codec (BSD license)
+- **libass**: Subtitle renderer (ISC license)
+- **libtheora**: Theora video codec (BSD license)
+
+### Excluded Codecs (GPL or non-free)
+
+The following popular codecs are **NOT** included due to licensing constraints:
+
+- **libx264**: H.264 video encoder (GPL license)
+- **libx265**: H.265/HEVC video encoder (GPL license)
+- **libfdk-aac**: AAC audio codec (requires --enable-nonfree)
+
+If you need these codecs, you must comply with GPL licensing terms and rebuild with `--enable-gpl` and/or `--enable-nonfree`.
 
 ## Two-Stage Build
 
