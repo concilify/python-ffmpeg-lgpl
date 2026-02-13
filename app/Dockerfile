@@ -47,30 +47,30 @@ RUN ./configure \
 RUN make -j$(nproc)
 RUN make install
 
-# # Stage 2: Copy FFmpeg artifacts to Python base image
-# FROM python:3.11-slim-bookworm
+# Stage 2: Copy FFmpeg artifacts to Python base image
+FROM python:3.11-slim-bookworm
 
-# # Install runtime dependencies
-# RUN apt-get update && apt-get install -y \
-#     libvpx7 \
-#     libmp3lame0 \
-#     libopus0 \
-#     libvorbis0a \
-#     libvorbisenc2 \
-#     libass9 \
-#     libtheora0 \
-#     && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libvpx7 \
+    libmp3lame0 \
+    libopus0 \
+    libvorbis0a \
+    libvorbisenc2 \
+    libass9 \
+    libtheora0 \
+    && rm -rf /var/lib/apt/lists/*
 
-# # Copy FFmpeg installation from builder stage
-# COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
+# Copy FFmpeg installation from builder stage
+COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
 
-# # Add FFmpeg to PATH and library path
-# ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
-# ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
-# ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
+# Add FFmpeg to PATH and library path
+ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
+ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
-# # Verify FFmpeg installation
-# RUN ffmpeg -version --buildconf && ffprobe -version
+# Verify FFmpeg installation
+RUN ffmpeg -version --buildconf && ffprobe -version
 
-# # Set working directory
-# WORKDIR /app
+# Set working directory
+WORKDIR /app
