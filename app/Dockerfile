@@ -71,7 +71,7 @@ ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:${LD_LIBRARY_PATH}"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 # Verify FFmpeg installation
-RUN ffmpeg -version -buildconf && ffprobe -version
+RUN ffmpeg -version --buildconf && ffprobe -version
 
 # Set working directory
 WORKDIR /app
