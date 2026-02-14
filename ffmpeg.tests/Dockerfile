@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy FFmpeg installation from ffmpeg binaries image
-COPY --from=python-ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
+COPY --from=ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
 
 # Verify FFmpeg installation
 RUN ffmpeg -version --buildconf && ffprobe -version

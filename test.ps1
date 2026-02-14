@@ -8,15 +8,15 @@ Write-Host "Building LGPL FFmpeg Docker Image" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 # Build the main FFmpeg image
-Write-Host "`nBuilding python-ffmpeg-lgpl image..." -ForegroundColor Yellow
-docker build -t python-ffmpeg-lgpl:latest ./ffmpeg
+Write-Host "`nBuilding ffmpeg-lgpl image..." -ForegroundColor Yellow
+docker build -t ffmpeg-lgpl:latest ./ffmpeg
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to build python-ffmpeg-lgpl image" -ForegroundColor Red
+    Write-Host "✗ Failed to build ffmpeg-lgpl image" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "✓ Successfully built python-ffmpeg-lgpl image" -ForegroundColor Green
+Write-Host "✓ Successfully built ffmpeg-lgpl image" -ForegroundColor Green
 
 # Test the FFmpeg binaries
 Write-Host "`n============================================" -ForegroundColor Cyan
@@ -105,4 +105,4 @@ Write-Host "All Tests Passed!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 
 Write-Host "`nThe LGPL-compliant FFmpeg image is ready to use." -ForegroundColor Green
-Write-Host "Image name: python-ffmpeg-lgpl:latest" -ForegroundColor Cyan
+Write-Host "Image name: ffmpeg-lgpl:latest" -ForegroundColor Cyan

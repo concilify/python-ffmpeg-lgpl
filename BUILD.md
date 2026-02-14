@@ -37,13 +37,13 @@ If you prefer to build manually:
 
 ```bash
 # Build the main FFmpeg image
-docker build -t python-ffmpeg-lgpl:latest ./ffmpeg
+docker build -t ffmpeg-lgpl:latest ./ffmpeg
 
-# Build the test image
-docker build -t python-ffmpeg-lgpl-test:latest ./python.tests
+# Build the Python test image
+docker build -t python-tests:latest ./python.tests
 
-# Run PyAV tests (this also verifies FFmpeg works correctly)
-docker run --rm python-ffmpeg-lgpl-test:latest
+# Run PyAV tests
+docker run --rm python-tests:latest
 ```
 
 ## LGPL Configuration
@@ -102,13 +102,13 @@ The test Dockerfile uses python:3.14-slim-bookworm as a base image and copies FF
 
 ## Usage
 
-The main image (python-ffmpeg-lgpl:latest) contains only FFmpeg binaries and libraries in a minimal scratch-based container. To use FFmpeg in your Python applications, you need to copy the FFmpeg files into a proper runtime environment:
+The main image (ffmpeg-lgpl:latest) contains only FFmpeg binaries and libraries in a minimal scratch-based container. To use FFmpeg in your Python applications, you need to copy the FFmpeg files into a proper runtime environment:
 
 ```dockerfile
 FROM python:3.14-slim-bookworm
 
 # Copy FFmpeg installation
-COPY --from=python-ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
+COPY --from=ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
 
 # Add FFmpeg to PATH and library path
 ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
