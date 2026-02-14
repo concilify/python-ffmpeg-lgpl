@@ -65,6 +65,8 @@ jobs:
           tags: ffmpeg-lgpl:latest
           build-args: |
             FFMPEG_VERSION=${{ steps.version.outputs.major_minor }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test Docker image
         shell: pwsh
