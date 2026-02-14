@@ -6,8 +6,10 @@ ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
-# Install runtime dependencies for FFmpeg
+# Install runtime dependencies for FFmpeg and build dependencies for PyAV
 RUN apt-get update && apt-get install -y \
+    gcc \
+    pkg-config \
     libvpx7 \
     libmp3lame0 \
     libopus0 \
@@ -15,12 +17,6 @@ RUN apt-get update && apt-get install -y \
     libvorbisenc2 \
     libass9 \
     libtheora0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install PyAV and its build dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy FFmpeg installation from ffmpeg binaries image
