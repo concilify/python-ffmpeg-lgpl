@@ -5,6 +5,10 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+-lgpl'
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -27,55 +31,54 @@ jobs:
           MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
           echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
 
-          # Extract X (major only)
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-
           echo "Full version: $VERSION"
           echo "Major.Minor: $MAJOR_MINOR"
-          echo "Major: $MAJOR"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
-        run: |
-          docker buildx build \
-            --load \
-            --build-arg FFMPEG_VERSION=${{ steps.version.outputs.major_minor }} \
-            -t ffmpeg-lgpl:latest \
-            ./ffmpeg
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ffmpeg
+          tags: |
+            type=semver,pattern={{version}}-lgpl
+            type=semver,pattern={{major}}.{{minor}}-lgpl
+            type=semver,pattern={{major}}-lgpl
+          flavor: |
+            latest=false
+
+      - name: Build Docker image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ffmpeg
+          push: false
+          load: true
+          tags: ffmpeg-lgpl:latest
+          build-args: |
+            FFMPEG_VERSION=${{ steps.version.outputs.major_minor }}
 
       - name: Test Docker image
         shell: pwsh
         run: |
           .\test.ps1
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag and push Docker image
-        run: |
-          # Lowercase the repository owner for GHCR
-          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-
-          # Tag with major version (X-lgpl)
-          docker tag ffmpeg-lgpl:latest ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major }}-lgpl
-          docker push ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major }}-lgpl
-
-          # Tag with major.minor version (X.Y-lgpl)
-          docker tag ffmpeg-lgpl:latest ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major_minor }}-lgpl
-          docker push ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major_minor }}-lgpl
-
-          # Tag with full version (X.Y.Z-lgpl)
-          docker tag ffmpeg-lgpl:latest ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.full_version }}-lgpl
-          docker push ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.full_version }}-lgpl
-
-          echo "Successfully pushed images:"
-          echo "  - ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major }}-lgpl"
-          echo "  - ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.major_minor }}-lgpl"
-          echo "  - ghcr.io/${OWNER}/ffmpeg:${{ steps.version.outputs.full_version }}-lgpl"
+          context: ./ffmpeg
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            FFMPEG_VERSION=${{ steps.version.outputs.major_minor }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
