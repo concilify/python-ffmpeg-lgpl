@@ -18,49 +18,8 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "✓ Successfully built python-ffmpeg-lgpl image" -ForegroundColor Green
 
-# Test the FFmpeg installation
-Write-Host "`n============================================" -ForegroundColor Cyan
-Write-Host "Testing FFmpeg Installation" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
-
-Write-Host "`nTesting FFmpeg version..." -ForegroundColor Yellow
-docker run --rm python-ffmpeg-lgpl:latest ffmpeg -version
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
-docker run --rm python-ffmpeg-lgpl:latest ffmpeg -hide_banner -L
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "`n✓ FFmpeg is working correctly" -ForegroundColor Green
-
-# Verify LGPL configuration
-Write-Host "`n============================================" -ForegroundColor Cyan
-Write-Host "Verifying LGPL Configuration" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
-
-Write-Host "`nChecking build configuration..." -ForegroundColor Yellow
-$buildConfig = docker run --rm python-ffmpeg-lgpl:latest ffmpeg -version
-
-if ($buildConfig -match "--enable-gpl") {
-    Write-Host "✗ WARNING: GPL is enabled in the build!" -ForegroundColor Red
-    Write-Host "This build may not be LGPL compliant." -ForegroundColor Red
-} else {
-    Write-Host "✓ GPL is disabled - LGPL compliant" -ForegroundColor Green
-}
-
-if ($buildConfig -match "--enable-version3") {
-    Write-Host "✓ Version 3 licenses enabled" -ForegroundColor Green
-} else {
-    Write-Host "! Version 3 licenses not enabled" -ForegroundColor Yellow
-}
+Write-Host "`nNote: The python-ffmpeg-lgpl image uses a scratch base and contains only FFmpeg binaries." -ForegroundColor Cyan
+Write-Host "FFmpeg will be tested in the container.tests image with a proper runtime environment." -ForegroundColor Cyan
 
 # Build the test image
 Write-Host "`n============================================" -ForegroundColor Cyan
