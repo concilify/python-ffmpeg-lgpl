@@ -1,5 +1,5 @@
 # Stage 1: Build FFmpeg from source with LGPL configuration
-FROM python:3.11-slim-bookworm AS builder
+FROM python:3.14-slim-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -43,13 +43,13 @@ RUN ./configure \
     --enable-libvorbis \
     --enable-libass \
     --enable-libtheora \
-    --extra-version="concilify-lgpl"
+    --extra-version="lgpl"
 
 RUN make -j$(nproc)
 RUN make install
 
 # Stage 2: Copy FFmpeg artifacts to Python base image
-FROM python:3.11-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
