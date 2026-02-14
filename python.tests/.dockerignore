@@ -1,0 +1,15 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+*.md
+
+# Build artifacts
+*.pyc
+__pycache__/
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store

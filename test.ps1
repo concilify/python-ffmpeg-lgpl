@@ -9,7 +9,7 @@ Write-Host "============================================" -ForegroundColor Cyan
 
 # Build the main FFmpeg image
 Write-Host "`nBuilding python-ffmpeg-lgpl image..." -ForegroundColor Yellow
-docker build -t python-ffmpeg-lgpl:latest ./app
+docker build -t python-ffmpeg-lgpl:latest ./ffmpeg
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "✗ Failed to build python-ffmpeg-lgpl image" -ForegroundColor Red
@@ -18,13 +18,23 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "✓ Successfully built python-ffmpeg-lgpl image" -ForegroundColor Green
 
-# Test the FFmpeg installation
+# Test the FFmpeg binaries
 Write-Host "`n============================================" -ForegroundColor Cyan
-Write-Host "Testing FFmpeg Installation" -ForegroundColor Cyan
+Write-Host "Testing FFmpeg Binaries" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
+Write-Host "`nBuilding ffmpeg.tests image..." -ForegroundColor Yellow
+docker build -t ffmpeg-tests:latest ./ffmpeg.tests
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "✗ Failed to build ffmpeg.tests image" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✓ Successfully built test image" -ForegroundColor Green
+
 Write-Host "`nTesting FFmpeg version..." -ForegroundColor Yellow
-docker run --rm python-ffmpeg-lgpl:latest ffmpeg -version
+docker run --rm ffmpeg-tests:latest ffmpeg -version
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
@@ -32,7 +42,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
-docker run --rm python-ffmpeg-lgpl:latest ffmpeg -hide_banner -L
+docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
@@ -47,7 +57,7 @@ Write-Host "Verifying LGPL Configuration" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 Write-Host "`nChecking build configuration..." -ForegroundColor Yellow
-$buildConfig = docker run --rm python-ffmpeg-lgpl:latest ffmpeg -version
+$buildConfig = docker run --rm ffmpeg-tests:latest ffmpeg -version
 
 if ($buildConfig -match "--enable-gpl") {
     Write-Host "✗ WARNING: GPL is enabled in the build!" -ForegroundColor Red
@@ -64,14 +74,14 @@ if ($buildConfig -match "--enable-version3") {
 
 # Build the test image
 Write-Host "`n============================================" -ForegroundColor Cyan
-Write-Host "Building Test Image with PyAV" -ForegroundColor Cyan
+Write-Host "Building Python Test Image" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
-Write-Host "`nBuilding test image..." -ForegroundColor Yellow
-docker build -t python-ffmpeg-lgpl-test:latest ./container.tests
+Write-Host "`nBuilding python.tests image..." -ForegroundColor Yellow
+docker build -t python-tests:latest ./python.tests
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to build test image" -ForegroundColor Red
+    Write-Host "✗ Failed to build python.tests image" -ForegroundColor Red
     exit 1
 }
 
@@ -83,7 +93,7 @@ Write-Host "Testing PyAV Binding" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 Write-Host "`nRunning PyAV test..." -ForegroundColor Yellow
-docker run --rm python-ffmpeg-lgpl-test:latest
+docker run --rm python-tests:latest
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "`n✗ PyAV test failed" -ForegroundColor Red
