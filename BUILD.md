@@ -40,13 +40,10 @@ If you prefer to build manually:
 # Build the main FFmpeg image
 docker build -t python-ffmpeg-lgpl:latest ./app
 
-# Test FFmpeg
-docker run --rm python-ffmpeg-lgpl:latest ffmpeg -version
-
 # Build the test image
 docker build -t python-ffmpeg-lgpl-test:latest ./container.tests
 
-# Run PyAV tests
+# Run PyAV tests (this also verifies FFmpeg works correctly)
 docker run --rm python-ffmpeg-lgpl-test:latest
 ```
 
@@ -84,20 +81,20 @@ If you need these codecs, you must comply with GPL licensing terms and rebuild w
 The Dockerfile uses a two-stage build process:
 
 1. **Stage 1 (builder)**: 
+   - Uses debian:bookworm-slim as base image
    - Installs build dependencies
-   - Clones FFmpeg source from GitHub
+   - Downloads FFmpeg source from ffmpeg.org
    - Configures and builds FFmpeg with LGPL settings
    - Preserves artifacts in `/usr/local/ffmpeg`
 
 2. **Stage 2 (final)**:
-   - Uses the same Python base image
-   - Installs only runtime dependencies
-   - Copies FFmpeg artifacts from the builder stage
-   - Results in a smaller final image
+   - Uses scratch base image for minimal size
+   - Copies only FFmpeg artifacts from the builder stage
+   - Results in a very small final image containing only FFmpeg binaries and libraries
 
 ## Testing with PyAV
 
-The test Dockerfile extends the main image and installs PyAV to verify that Python can successfully bind to the FFmpeg libraries. The test script (`test_pyav.py`) verifies:
+The test Dockerfile uses python:3.14-slim-bookworm as a base image and copies FFmpeg from the main image. It installs PyAV to verify that Python can successfully bind to the FFmpeg libraries. The test script (`test_pyav.py`) verifies:
 
 - PyAV can be imported
 - PyAV can detect FFmpeg version
@@ -106,10 +103,29 @@ The test Dockerfile extends the main image and installs PyAV to verify that Pyth
 
 ## Usage
 
-Once built, you can use the image as a base for your own Python applications that need FFmpeg:
+The main image (python-ffmpeg-lgpl:latest) contains only FFmpeg binaries and libraries in a minimal scratch-based container. To use FFmpeg in your Python applications, you need to copy the FFmpeg files into a proper runtime environment:
 
 ```dockerfile
-FROM python-ffmpeg-lgpl:latest
+FROM python:3.14-slim-bookworm
+
+# Copy FFmpeg installation
+COPY --from=python-ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
+
+# Add FFmpeg to PATH and library path
+ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
+ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
+
+# Install runtime dependencies for FFmpeg
+RUN apt-get update && apt-get install -y \
+    libvpx7 \
+    libmp3lame0 \
+    libopus0 \
+    libvorbis0a \
+    libvorbisenc2 \
+    libass9 \
+    libtheora0 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install your Python dependencies
 COPY requirements.txt .
