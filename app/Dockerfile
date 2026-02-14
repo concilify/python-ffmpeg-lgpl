@@ -1,5 +1,5 @@
 # Stage 1: Build FFmpeg from source with LGPL configuration
-FROM python:3.14-slim-bookworm AS builder
+FROM debian:bookworm-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -48,19 +48,8 @@ RUN ./configure \
 RUN make -j$(nproc)
 RUN make install
 
-# Stage 2: Copy FFmpeg artifacts to Python base image
-FROM python:3.14-slim-bookworm
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libvpx7 \
-    libmp3lame0 \
-    libopus0 \
-    libvorbis0a \
-    libvorbisenc2 \
-    libass9 \
-    libtheora0 \
-    && rm -rf /var/lib/apt/lists/*
+# Stage 2: Create minimal image with only FFmpeg binaries
+FROM scratch
 
 # Copy FFmpeg installation from builder stage
 COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
@@ -69,9 +58,3 @@ COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
 ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
-
-# Verify FFmpeg installation
-RUN ffmpeg -version --buildconf && ffprobe -version
-
-# Set working directory
-WORKDIR /app
