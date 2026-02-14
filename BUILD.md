@@ -6,9 +6,9 @@ This repository contains Docker configurations for building an LGPL-compliant FF
 
 ```
 .
-├── app/
+├── ffmpeg/
 │   └── Dockerfile          # Main two-stage Dockerfile for LGPL FFmpeg build
-└── container.tests/
+└── python.tests/
     ├── Dockerfile          # Test Dockerfile with PyAV
     ├── test_pyav.py        # Python script to test PyAV binding
     └── test.ps1            # PowerShell script to build and test
@@ -21,7 +21,6 @@ This repository contains Docker configurations for building an LGPL-compliant FF
 The easiest way to build and test the image is using the provided PowerShell script:
 
 ```powershell
-cd container.tests
 ./test.ps1
 ```
 
@@ -38,10 +37,10 @@ If you prefer to build manually:
 
 ```bash
 # Build the main FFmpeg image
-docker build -t python-ffmpeg-lgpl:latest ./app
+docker build -t python-ffmpeg-lgpl:latest ./ffmpeg
 
 # Build the test image
-docker build -t python-ffmpeg-lgpl-test:latest ./container.tests
+docker build -t python-ffmpeg-lgpl-test:latest ./python.tests
 
 # Run PyAV tests (this also verifies FFmpeg works correctly)
 docker run --rm python-ffmpeg-lgpl-test:latest

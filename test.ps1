@@ -9,7 +9,7 @@ Write-Host "============================================" -ForegroundColor Cyan
 
 # Build the main FFmpeg image
 Write-Host "`nBuilding python-ffmpeg-lgpl image..." -ForegroundColor Yellow
-docker build -t python-ffmpeg-lgpl:latest ./app
+docker build -t python-ffmpeg-lgpl:latest ./ffmpeg
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "✗ Failed to build python-ffmpeg-lgpl image" -ForegroundColor Red
@@ -19,7 +19,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "✓ Successfully built python-ffmpeg-lgpl image" -ForegroundColor Green
 
 Write-Host "`nNote: The python-ffmpeg-lgpl image uses a scratch base and contains only FFmpeg binaries." -ForegroundColor Cyan
-Write-Host "FFmpeg will be tested in the container.tests image with a proper runtime environment." -ForegroundColor Cyan
+Write-Host "FFmpeg will be tested in the python.tests image with a proper runtime environment." -ForegroundColor Cyan
 
 # Build the test image
 Write-Host "`n============================================" -ForegroundColor Cyan
@@ -27,7 +27,7 @@ Write-Host "Building Test Image with PyAV" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 Write-Host "`nBuilding test image..." -ForegroundColor Yellow
-docker build -t python-ffmpeg-lgpl-test:latest ./container.tests
+docker build -t python-ffmpeg-lgpl-test:latest ./python.tests
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "✗ Failed to build test image" -ForegroundColor Red
