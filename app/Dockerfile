@@ -17,19 +17,19 @@ RUN apt-get update && apt-get install -y \
     libtheora-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /build
 
-# Download and extract FFmpeg source
 ARG FFMPEG_VERSION=7.1
 
+# Download and extract FFmpeg source
 RUN curl -fsSL https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz \
     -o ffmpeg.tar.xz \
     && tar -xJf ffmpeg.tar.xz \
     && rm ffmpeg.tar.xz
 
-# Build FFmpeg with LGPL configuration
 WORKDIR /build/ffmpeg-${FFMPEG_VERSION}
+
+# Configure FFmpeg as LGPL only
 RUN ./configure \
     --enable-version3 \
     --disable-gpl \
@@ -45,6 +45,7 @@ RUN ./configure \
     --enable-libtheora \
     --extra-version="lgpl"
 
+# Build FFmpeg with LGPL configuration
 RUN make -j$(nproc)
 RUN make install
 
@@ -53,8 +54,3 @@ FROM scratch
 
 # Copy FFmpeg installation from builder stage
 COPY --from=builder /usr/local/ffmpeg /usr/local/ffmpeg
-
-# Add FFmpeg to PATH and library path
-ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
-ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
