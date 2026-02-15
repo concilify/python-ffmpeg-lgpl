@@ -7,9 +7,12 @@ ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
 # Install runtime dependencies for FFmpeg and build dependencies for PyAV
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    build-essential \
     pkg-config \
+    ca-certificates \
+    libssl3 \
     libvpx7 \
     libmp3lame0 \
     libopus0 \

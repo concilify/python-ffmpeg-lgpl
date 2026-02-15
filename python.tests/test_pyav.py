@@ -45,6 +45,34 @@ except Exception as e:
     print(f"✗ Failed to access FFmpeg formats: {e}")
     sys.exit(1)
 
+# Test HTTPS stream opening
+print("\nTesting HTTPS stream support...")
+try:
+    test_url = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+    print(f"Attempting to open: {test_url}")
+    
+    container = av.open(test_url, timeout=10.0)
+    try:
+        print(f"✓ Successfully opened HTTPS stream")
+        print(f"✓ Stream duration: {container.duration / 1000000:.2f} seconds" if container.duration else "✓ Stream opened (duration unknown)")
+        print(f"✓ Number of streams: {len(container.streams)}")
+        
+        # List stream information
+        for stream in container.streams:
+            stream_type = stream.type
+            if hasattr(stream, 'codec_context'):
+                codec = stream.codec_context.name if stream.codec_context else 'unknown'
+                print(f"  - {stream_type} stream: {codec}")
+        
+        print("✓ HTTPS/SSL support is working correctly")
+    finally:
+        container.close()
+    
+except Exception as e:
+    print(f"✗ Failed to open HTTPS stream: {e}")
+    print("  This indicates that OpenSSL support is not properly enabled in FFmpeg")
+    sys.exit(1)
+
 print("\n" + "="*50)
 print("All tests passed! PyAV is successfully bound to FFmpeg.")
 print("="*50)

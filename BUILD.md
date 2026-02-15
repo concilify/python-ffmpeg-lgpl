@@ -64,6 +64,7 @@ The build includes the following LGPL-compatible codecs:
 - **libvorbis**: Vorbis audio codec (BSD license)
 - **libass**: Subtitle renderer (ISC license)
 - **libtheora**: Theora video codec (BSD license)
+- **OpenSSL**: TLS/SSL support for HTTPS streams (Apache 2.0 license)
 
 ### Excluded Codecs (GPL or non-free)
 
@@ -99,6 +100,7 @@ The test Dockerfile uses python:3.14-slim-bookworm as a base image and copies FF
 - PyAV can detect FFmpeg version
 - PyAV can access FFmpeg codecs
 - PyAV can access FFmpeg formats
+- PyAV can open HTTPS streams using the test stream at https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
 
 ## Usage
 
@@ -116,7 +118,9 @@ ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
 # Install runtime dependencies for FFmpeg
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
     libvpx7 \
     libmp3lame0 \
     libopus0 \

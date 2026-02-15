@@ -2,13 +2,15 @@
 FROM debian:bookworm-slim AS builder
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     xz-utils \
     build-essential \
     pkg-config \
     yasm \
     nasm \
+    ca-certificates \
+    libssl-dev \
     libvpx-dev \
     libmp3lame-dev \
     libopus-dev \
@@ -36,13 +38,14 @@ RUN ./configure \
     --disable-nonfree \
     --enable-shared \
     --enable-pic \
-    --prefix=/usr/local/ffmpeg \
+    --enable-openssl \
     --enable-libvpx \
     --enable-libmp3lame \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libass \
     --enable-libtheora \
+    --prefix=/usr/local/ffmpeg \
     --extra-version="lgpl"
 
 # Build FFmpeg with LGPL configuration
