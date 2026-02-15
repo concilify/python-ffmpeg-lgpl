@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Test script to verify HLS demuxer is present in FFmpeg
 
 set -e
