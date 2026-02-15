@@ -90,7 +90,7 @@ jobs:
       - name: Verify HLS demuxer presence
         run: |
           DEMUXERS_OUTPUT=$(docker run --rm ffmpeg-tests:latest ffmpeg -demuxers)
-          
+
           if echo "$DEMUXERS_OUTPUT" | grep -E '^[[:space:]]*D[[:space:]]+hls\b' > /dev/null; then
             echo "✓ HLS demuxer is present"
           else
