@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /build
 
-ARG FFMPEG_VERSION=7.1
+ARG FFMPEG_VERSION=7.1.3
 
 # Download and extract FFmpeg source
 RUN curl -fsSL https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz \

@@ -1,0 +1,50 @@
+name: Shared Build
+
+on:
+  workflow_call:
+    inputs:
+      ffmpeg_version:
+        description: 'FFmpeg version to build (3-component version, e.g., 7.1.0)'
+        required: true
+        type: string
+
+env:
+  IMAGE_TAG: ffmpeg-lgpl:latest
+  ARTIFACT_PATH: /tmp/ffmpeg-lgpl-image.tar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ffmpeg
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_TAG }}
+          build-args: |
+            FFMPEG_VERSION=${{ inputs.ffmpeg_version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save image as artifact
+        run: |
+          docker save ${{ env.IMAGE_TAG }} -o ${{ env.ARTIFACT_PATH }}
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-lgpl-image
+          path: ${{ env.ARTIFACT_PATH }}
+          retention-days: 1

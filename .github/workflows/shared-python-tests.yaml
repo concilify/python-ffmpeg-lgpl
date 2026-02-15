@@ -1,0 +1,32 @@
+name: Python Tests
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ffmpeg-lgpl-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: |
+          docker load -i /tmp/ffmpeg-lgpl-image.tar
+
+      - name: Build test image
+        run: |
+          docker build -t python-tests:latest ./python.tests
+
+      - name: Run PyAV test
+        run: |
+          docker run --rm python-tests:latest

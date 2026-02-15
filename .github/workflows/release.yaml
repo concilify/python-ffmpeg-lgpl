@@ -9,41 +9,60 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-publish:
+  extract-version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Extract version from tag
         id: version
         run: |
           # Remove leading 'v' and trailing '-lgpl'
           VERSION="${GITHUB_REF_NAME#v}"
           VERSION="${VERSION%-lgpl}"
-          echo "full_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          echo "Version: $VERSION"
 
-          # Extract X.Y (major.minor)
-          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
-          echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+  build:
+    needs: extract-version
+    uses: ./.github/workflows/shared-build.yaml
+    with:
+      ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
-          # Extract X (major only)
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+  ffmpeg-tests:
+    needs: [extract-version, build]
+    uses: ./.github/workflows/shared-ffmpeg-tests.yaml
+    with:
+      ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
-          echo "Full version: $VERSION"
-          echo "Major.Minor: $MAJOR_MINOR"
-          echo "Major: $MAJOR"
+  python-tests:
+    needs: build
+    uses: ./.github/workflows/shared-python-tests.yaml
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  publish:
+    needs: [extract-version, ffmpeg-tests, python-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
         with:
-          driver: docker
+          name: ffmpeg-lgpl-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: |
+          docker load -i /tmp/ffmpeg-lgpl-image.tar
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -52,39 +71,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ffmpeg
-          tags: |
-            type=raw,value=${{ steps.version.outputs.full_version }}-lgpl
-            type=raw,value=${{ steps.version.outputs.major_minor }}-lgpl
-            type=raw,value=${{ steps.version.outputs.major }}-lgpl
-          flavor: |
-            latest=false
-
-      - name: Build Docker image for testing
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ffmpeg
-          push: false
-          load: true
-          tags: ffmpeg-lgpl:latest
-          build-args: |
-            FFMPEG_VERSION=${{ steps.version.outputs.major_minor }}
-
-      - name: Test Docker image
-        shell: pwsh
+      - name: Tag and push Docker image
         run: |
-          .\test.ps1
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ffmpeg
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            FFMPEG_VERSION=${{ steps.version.outputs.major_minor }}
+          # Tag the loaded image with full version
+          docker tag ffmpeg-lgpl:latest ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.version }}-lgpl
+          
+          # Push the tag
+          docker push ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.version }}-lgpl

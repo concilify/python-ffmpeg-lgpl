@@ -1,5 +1,6 @@
 #!/usr/bin/env pwsh
 # PowerShell script to build and test the LGPL FFmpeg Docker image
+# NOTE: This script is for LOCAL USE ONLY. CI/CD workflows use separate jobs for building and testing.
 
 $ErrorActionPreference = "Stop"
 
@@ -34,18 +35,12 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "✓ Successfully built test image" -ForegroundColor Green
 
 Write-Host "`nTesting FFmpeg version..." -ForegroundColor Yellow
-docker run --rm ffmpeg-tests:latest ffmpeg -version
+$version = docker run --rm ffmpeg-tests:latest ffmpeg -version
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
-docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
+if ($version -match "ffmpeg version 7.1.3-lgpl") {
+    Write-Host "✓ Version is correct" -ForegroundColor Green
+} else {
+    Write-Host "✗ ERROR: Version is not correct in the build!" -ForegroundColor Red
     exit 1
 }
 
@@ -55,6 +50,30 @@ Write-Host "`n✓ FFmpeg is working correctly" -ForegroundColor Green
 Write-Host "`n============================================" -ForegroundColor Cyan
 Write-Host "Verifying LGPL Configuration" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
+
+Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
+$license = docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
+
+if ($license -match "GNU Lesser General Public License") {
+    Write-Host "✓ GNU Lesser General Public License is present" -ForegroundColor Green
+} else {
+    Write-Host "✗ ERROR: GNU Lesser General Public License is not present!" -ForegroundColor Red
+    exit 1
+}
+
+if ($license -match "GNU General Public License") {
+    Write-Host "✗ ERROR: GNU General Public License is present!" -ForegroundColor Red
+    exit 1
+} else {
+    Write-Host "✓ GNU General Public License is not present" -ForegroundColor Green
+}
+
+if ($license -match "nonfree") {
+    Write-Host "✗ ERROR: nonfree is present!" -ForegroundColor Red
+    exit 1
+} else {
+    Write-Host "✓ nonfree is not present" -ForegroundColor Green
+}
 
 Write-Host "`nChecking build configuration..." -ForegroundColor Yellow
 $buildConfig = docker run --rm ffmpeg-tests:latest ffmpeg -version
@@ -70,7 +89,8 @@ if ($buildConfig -match "--enable-gpl") {
 if ($buildConfig -match "--enable-version3") {
     Write-Host "✓ Version 3 licenses enabled" -ForegroundColor Green
 } else {
-    Write-Host "! Version 3 licenses not enabled" -ForegroundColor Yellow
+    Write-Host "✗ ERROR:  Version 3 licenses not enabled" -ForegroundColor Yellow
+    exit 1
 }
 
 # Build the test image
