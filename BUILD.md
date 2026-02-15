@@ -118,7 +118,9 @@ ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/ffmpeg/lib/pkgconfig:/usr/local/lib/pkgconfig"
 
 # Install runtime dependencies for FFmpeg
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
     libvpx7 \
     libmp3lame0 \
     libopus0 \
@@ -126,7 +128,6 @@ RUN apt-get update && apt-get install -y \
     libvorbisenc2 \
     libass9 \
     libtheora0 \
-    libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install your Python dependencies
