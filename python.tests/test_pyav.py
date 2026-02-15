@@ -59,7 +59,8 @@ try:
     # Search for HLS demuxer in the demuxer list
     # Pattern matches: line starting with D (demuxer), followed by whitespace,
     # then 'hls' as a complete word (not part of hlsv2, etc.)
-    if re.search(r'^\s*D\s+hls\b', result.stdout, re.MULTILINE | re.IGNORECASE):
+    # Note: FFmpeg demuxer names are always lowercase, so no case-insensitive matching needed
+    if re.search(r'^\s*D\s+hls\b', result.stdout, re.MULTILINE):
         print("✓ HLS demuxer is present")
     else:
         print("✗ HLS demuxer is not present")
