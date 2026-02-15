@@ -86,3 +86,14 @@ jobs:
             echo "✗ Version 3 licenses not enabled"
             exit 1
           fi
+
+      - name: Verify HLS demuxer presence
+        run: |
+          DEMUXERS_OUTPUT=$(docker run --rm ffmpeg-tests:latest ffmpeg -demuxers)
+
+          if echo "$DEMUXERS_OUTPUT" | grep -E '^[[:space:]]*D[[:space:]]+hls\b' > /dev/null; then
+            echo "✓ HLS demuxer is present"
+          else
+            echo "✗ HLS demuxer is not present"
+            exit 1
+          fi

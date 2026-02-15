@@ -93,6 +93,17 @@ if ($buildConfig -match "--enable-version3") {
     exit 1
 }
 
+# Verify HLS demuxer presence
+Write-Host "`nChecking HLS demuxer..." -ForegroundColor Yellow
+$demuxers = docker run --rm ffmpeg-tests:latest ffmpeg -demuxers
+
+if ($demuxers -match '^\s*D\s+hls\b') {
+    Write-Host "✓ HLS demuxer is present" -ForegroundColor Green
+} else {
+    Write-Host "✗ ERROR: HLS demuxer is not present" -ForegroundColor Red
+    exit 1
+}
+
 # Build the test image
 Write-Host "`n============================================" -ForegroundColor Cyan
 Write-Host "Building Python Test Image" -ForegroundColor Cyan
