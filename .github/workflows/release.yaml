@@ -9,6 +9,9 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+
 jobs:
   extract-version:
     runs-on: ubuntu-latest
@@ -28,28 +31,21 @@ jobs:
   build:
     needs: extract-version
     uses: ./.github/workflows/shared-build.yaml
-    permissions:
-      contents: read
     with:
       ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
   ffmpeg-tests:
     needs: build
     uses: ./.github/workflows/shared-ffmpeg-tests.yaml
-    permissions:
-      contents: read
 
   python-tests:
     needs: build
     uses: ./.github/workflows/shared-python-tests.yaml
-    permissions:
-      contents: read
 
   publish:
     needs: [extract-version, ffmpeg-tests, python-tests]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       packages: write
 
     steps:

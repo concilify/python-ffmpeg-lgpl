@@ -2,6 +2,11 @@ name: FFmpeg Tests
 
 on:
   workflow_call:
+    inputs:
+      ffmpeg_version:
+        description: 'FFmpeg version to build (3-component version, e.g., 7.1.0)'
+        required: true
+        type: string
 
 jobs:
   test:
@@ -27,20 +32,48 @@ jobs:
         run: |
           docker build -t ffmpeg-tests:latest ./ffmpeg.tests
 
-      - name: Verify FFmpeg version and check for version number in console output (eg. x.y.z-lgpl)
+      - name: Verify FFmpeg version
         run: |
-          docker run --rm ffmpeg-tests:latest ffmpeg -version
+          VERSION_OUTPUT=$(docker run --rm ffmpeg-tests:latest ffmpeg -version)
 
-      - name: Verify FFmpeg banner and check console output for the LGPL banner
+          if echo "$VERSION_OUTPUT" | grep -q -- "ffmpeg version ${{ inputs.ffmpeg_version }}-lgpl"; then
+            echo "✓ Version is correct"
+          else
+            echo "✗ ERROR: Version is not correct in the build!"
+            exit 1
+          fi
+
+      - name: Verify FFmpeg banner LGPL compliance
         run: |
-          docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
+          LICENSE_OUTPUT=$(docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L)
+
+          if echo "$LICENSE_OUTPUT" | grep -q -- "GNU Lesser General Public License"; then
+            echo "✓ GNU Lesser General Public License is present"
+          else
+            echo "✗ ERROR: GNU Lesser General Public License is not present!"
+            exit 1
+          fi
+
+          if echo "$LICENSE_OUTPUT" | grep -q -- "GNU General Public License"; then
+            echo "✗ ERROR: GNU General Public License is present!"
+            exit 1
+          else
+            echo "✓ GNU General Public License is not present"
+          fi
+
+          if echo "$LICENSE_OUTPUT" | grep -q -- "nonfree"; then
+            echo "✗ ERROR: nonfree is present!"
+            exit 1
+          else
+            echo "✓ nonfree is not present"
+          fi
 
       - name: Verify LGPL configuration
         run: |
           BUILD_CONFIG=$(docker run --rm ffmpeg-tests:latest ffmpeg -version)
           
           if echo "$BUILD_CONFIG" | grep -q -- "--enable-gpl"; then
-            echo "ERROR: GPL is enabled in the build!"
+            echo "✗ ERROR: GPL is enabled in the build!"
             echo "This build is NOT LGPL compliant."
             exit 1
           else
@@ -50,5 +83,6 @@ jobs:
           if echo "$BUILD_CONFIG" | grep -q -- "--enable-version3"; then
             echo "✓ Version 3 licenses enabled"
           else
-            echo "! Version 3 licenses not enabled"
+            echo "✗ Version 3 licenses not enabled"
+            exit 1
           fi

@@ -23,7 +23,7 @@ jobs:
         run: |
           docker load -i /tmp/ffmpeg-lgpl-image.tar
 
-      - name: Build Python test image
+      - name: Build test image
         run: |
           docker build -t python-tests:latest ./python.tests
 

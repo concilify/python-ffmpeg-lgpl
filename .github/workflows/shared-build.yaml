@@ -5,9 +5,8 @@ on:
     inputs:
       ffmpeg_version:
         description: 'FFmpeg version to build (3-component version, e.g., 7.1.0)'
-        required: false
+        required: true
         type: string
-        default: ''
 
 env:
   IMAGE_TAG: ffmpeg-lgpl:latest

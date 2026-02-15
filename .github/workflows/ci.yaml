@@ -6,20 +6,19 @@ on:
     - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     uses: ./.github/workflows/shared-build.yaml
-    permissions:
-      contents: read
+    with:
+      ffmpeg_version: "7.1.3"
 
   ffmpeg-tests:
     needs: build
     uses: ./.github/workflows/shared-ffmpeg-tests.yaml
-    permissions:
-      contents: read
 
   python-tests:
     needs: build
     uses: ./.github/workflows/shared-python-tests.yaml
-    permissions:
-      contents: read
