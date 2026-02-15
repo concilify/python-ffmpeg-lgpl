@@ -18,6 +18,8 @@ jobs:
   ffmpeg-tests:
     needs: build
     uses: ./.github/workflows/shared-ffmpeg-tests.yaml
+    with:
+      ffmpeg_version: "7.1.3"
 
   python-tests:
     needs: build

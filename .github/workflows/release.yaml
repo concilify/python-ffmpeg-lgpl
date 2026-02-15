@@ -35,8 +35,10 @@ jobs:
       ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
   ffmpeg-tests:
-    needs: build
+    needs: [extract-version, build]
     uses: ./.github/workflows/shared-ffmpeg-tests.yaml
+    with:
+      ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
   python-tests:
     needs: build
