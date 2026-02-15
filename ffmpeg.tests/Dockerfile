@@ -18,5 +18,9 @@ RUN apt-get update && apt-get install -y \
 # Copy FFmpeg installation from ffmpeg binaries image
 COPY --from=ffmpeg-lgpl:latest /usr/local/ffmpeg /usr/local/ffmpeg
 
+# Copy test scripts
+COPY test_hls_demuxer.sh /usr/local/bin/test_hls_demuxer.sh
+RUN chmod +x /usr/local/bin/test_hls_demuxer.sh
+
 # Verify FFmpeg installation
 RUN ffmpeg -version --buildconf && ffprobe -version
