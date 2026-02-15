@@ -1,5 +1,6 @@
 #!/usr/bin/env pwsh
 # PowerShell script to build and test the LGPL FFmpeg Docker image
+# NOTE: This script is for LOCAL USE ONLY. CI/CD workflows use separate jobs for building and testing.
 
 $ErrorActionPreference = "Stop"
 
