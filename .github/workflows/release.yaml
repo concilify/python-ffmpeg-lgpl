@@ -71,7 +71,89 @@ jobs:
       - name: Test Docker image
         shell: pwsh
         run: |
-          .\test.ps1
+          $ErrorActionPreference = "Stop"
+
+          Write-Host "============================================" -ForegroundColor Cyan
+          Write-Host "Testing FFmpeg Binaries" -ForegroundColor Cyan
+          Write-Host "============================================" -ForegroundColor Cyan
+
+          Write-Host "`nBuilding ffmpeg.tests image..." -ForegroundColor Yellow
+          docker build -t ffmpeg-tests:latest ./ffmpeg.tests
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "✗ Failed to build ffmpeg.tests image" -ForegroundColor Red
+              exit 1
+          }
+
+          Write-Host "✓ Successfully built test image" -ForegroundColor Green
+
+          Write-Host "`nTesting FFmpeg version..." -ForegroundColor Yellow
+          docker run --rm ffmpeg-tests:latest ffmpeg -version
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
+              exit 1
+          }
+
+          Write-Host "`nTesting FFmpeg banner..." -ForegroundColor Yellow
+          docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "✗ Failed to run ffmpeg" -ForegroundColor Red
+              exit 1
+          }
+
+          Write-Host "`n✓ FFmpeg is working correctly" -ForegroundColor Green
+
+          Write-Host "`n============================================" -ForegroundColor Cyan
+          Write-Host "Verifying LGPL Configuration" -ForegroundColor Cyan
+          Write-Host "============================================" -ForegroundColor Cyan
+
+          Write-Host "`nChecking build configuration..." -ForegroundColor Yellow
+          $buildConfig = docker run --rm ffmpeg-tests:latest ffmpeg -version
+
+          if ($buildConfig -match "--enable-gpl") {
+              Write-Host "✗ WARNING: GPL is enabled in the build!" -ForegroundColor Red
+              Write-Host "This build may not be LGPL compliant." -ForegroundColor Red
+          } else {
+              Write-Host "✓ GPL is disabled - LGPL compliant" -ForegroundColor Green
+          }
+
+          if ($buildConfig -match "--enable-version3") {
+              Write-Host "✓ Version 3 licenses enabled" -ForegroundColor Green
+          } else {
+              Write-Host "! Version 3 licenses not enabled" -ForegroundColor Yellow
+          }
+
+          Write-Host "`n============================================" -ForegroundColor Cyan
+          Write-Host "Building Python Test Image" -ForegroundColor Cyan
+          Write-Host "============================================" -ForegroundColor Cyan
+
+          Write-Host "`nBuilding python.tests image..." -ForegroundColor Yellow
+          docker build -t python-tests:latest ./python.tests
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "✗ Failed to build python.tests image" -ForegroundColor Red
+              exit 1
+          }
+
+          Write-Host "✓ Successfully built test image" -ForegroundColor Green
+
+          Write-Host "`n============================================" -ForegroundColor Cyan
+          Write-Host "Testing PyAV Binding" -ForegroundColor Cyan
+          Write-Host "============================================" -ForegroundColor Cyan
+
+          Write-Host "`nRunning PyAV test..." -ForegroundColor Yellow
+          docker run --rm python-tests:latest
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "`n✗ PyAV test failed" -ForegroundColor Red
+              exit 1
+          }
+
+          Write-Host "`n============================================" -ForegroundColor Cyan
+          Write-Host "All Tests Passed!" -ForegroundColor Green
+          Write-Host "============================================" -ForegroundColor Cyan
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
