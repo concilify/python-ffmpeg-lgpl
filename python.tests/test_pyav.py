@@ -3,6 +3,8 @@
 Test script to verify PyAV can bind to FFmpeg and open a stream.
 """
 
+import re
+import subprocess
 import sys
 
 try:
@@ -43,6 +45,33 @@ try:
     print(f"✓ PyAV can access FFmpeg formats ({len(formats)} formats available)")
 except Exception as e:
     print(f"✗ Failed to access FFmpeg formats: {e}")
+    sys.exit(1)
+
+# Test HLS demuxer presence
+try:
+    result = subprocess.run(
+        ["ffmpeg", "-demuxers"],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+    
+    # Search for HLS demuxer using word boundary matching
+    if 'hls' in result.stdout.lower():
+        # Check for exact word match to avoid false positives
+        if re.search(r'\bhls\b', result.stdout, re.IGNORECASE):
+            print("✓ HLS demuxer is present")
+        else:
+            print("✗ HLS demuxer not found (found similar but not exact match)")
+            sys.exit(1)
+    else:
+        print("✗ HLS demuxer is not present")
+        sys.exit(1)
+except subprocess.CalledProcessError as e:
+    print(f"✗ Failed to check demuxers: {e}")
+    sys.exit(1)
+except Exception as e:
+    print(f"✗ Failed to verify HLS demuxer: {e}")
     sys.exit(1)
 
 print("\n" + "="*50)
