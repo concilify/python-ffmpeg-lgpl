@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-image.yaml
+    uses: ./.github/workflows/shared-build.yaml
     permissions:
       contents: read
 
