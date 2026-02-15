@@ -1,8 +1,6 @@
 #!/bin/sh
 # Test script to verify HLS demuxer is present in FFmpeg
 
-set -e
-
 echo "Testing HLS demuxer presence..."
 
 # Run ffmpeg -demuxers and search for HLS demuxer
