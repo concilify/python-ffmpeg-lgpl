@@ -56,14 +56,11 @@ try:
         check=True
     )
     
-    # Search for HLS demuxer using word boundary matching
-    if 'hls' in result.stdout.lower():
-        # Check for exact word match to avoid false positives
-        if re.search(r'\bhls\b', result.stdout, re.IGNORECASE):
-            print("✓ HLS demuxer is present")
-        else:
-            print("✗ HLS demuxer not found (found similar but not exact match)")
-            sys.exit(1)
+    # Search for HLS demuxer in the demuxer list
+    # Pattern matches: line starting with D (demuxer), followed by whitespace,
+    # then 'hls' as a complete word (not part of hlsv2, etc.)
+    if re.search(r'^\s*D\s+hls\b', result.stdout, re.MULTILINE | re.IGNORECASE):
+        print("✓ HLS demuxer is present")
     else:
         print("✗ HLS demuxer is not present")
         sys.exit(1)
