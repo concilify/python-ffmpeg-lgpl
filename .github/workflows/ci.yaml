@@ -7,16 +7,19 @@ on:
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build:
+    uses: ./.github/workflows/build-image.yaml
     permissions:
       contents: read
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+  test-ffmpeg-binaries:
+    needs: build
+    uses: ./.github/workflows/test-ffmpeg-binaries.yaml
+    permissions:
+      contents: read
 
-    - name: Test
-      shell: pwsh
-      run: |
-        .\test.ps1
+  test-pyav-binding:
+    needs: build
+    uses: ./.github/workflows/test-pyav-binding.yaml
+    permissions:
+      contents: read
