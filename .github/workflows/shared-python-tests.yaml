@@ -1,4 +1,4 @@
-name: Test PyAV Binding
+name: Python Tests
 
 on:
   workflow_call:

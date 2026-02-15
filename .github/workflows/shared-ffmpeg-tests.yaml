@@ -1,4 +1,4 @@
-name: Test FFmpeg Binaries
+name: FFmpeg Tests
 
 on:
   workflow_call:
@@ -27,11 +27,11 @@ jobs:
         run: |
           docker build -t ffmpeg-tests:latest ./ffmpeg.tests
 
-      - name: Test FFmpeg version
+      - name: Verify FFmpeg version and check for version number in console output (eg. x.y.z-lgpl)
         run: |
           docker run --rm ffmpeg-tests:latest ffmpeg -version
 
-      - name: Test FFmpeg banner
+      - name: Verify FFmpeg banner and check console output for the LGPL banner
         run: |
           docker run --rm ffmpeg-tests:latest ffmpeg -hide_banner -L
 

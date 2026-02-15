@@ -12,14 +12,14 @@ jobs:
     permissions:
       contents: read
 
-  test-ffmpeg-binaries:
+  ffmpeg-tests:
     needs: build
-    uses: ./.github/workflows/test-ffmpeg-binaries.yaml
+    uses: ./.github/workflows/shared-ffmpeg-tests.yaml
     permissions:
       contents: read
 
-  test-pyav-binding:
+  python-tests:
     needs: build
-    uses: ./.github/workflows/test-pyav-binding.yaml
+    uses: ./.github/workflows/shared-python-tests.yaml
     permissions:
       contents: read

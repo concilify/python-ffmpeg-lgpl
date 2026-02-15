@@ -13,9 +13,7 @@ jobs:
   extract-version:
     runs-on: ubuntu-latest
     outputs:
-      full_version: ${{ steps.version.outputs.full_version }}
-      major_minor: ${{ steps.version.outputs.major_minor }}
-      major: ${{ steps.version.outputs.major }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Extract version from tag
         id: version
@@ -23,19 +21,9 @@ jobs:
           # Remove leading 'v' and trailing '-lgpl'
           VERSION="${GITHUB_REF_NAME#v}"
           VERSION="${VERSION%-lgpl}"
-          echo "full_version=$VERSION" >> $GITHUB_OUTPUT
-
-          # Extract X.Y (major.minor)
-          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
-          echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
-
-          # Extract X (major only)
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-
-          echo "Full version: $VERSION"
-          echo "Major.Minor: $MAJOR_MINOR"
-          echo "Major: $MAJOR"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          echo "Version: $VERSION"
 
   build:
     needs: extract-version
@@ -43,22 +31,22 @@ jobs:
     permissions:
       contents: read
     with:
-      ffmpeg_version: ${{ needs.extract-version.outputs.major_minor }}
+      ffmpeg_version: ${{ needs.extract-version.outputs.version }}
 
-  test-ffmpeg-binaries:
+  ffmpeg-tests:
     needs: build
-    uses: ./.github/workflows/test-ffmpeg-binaries.yaml
+    uses: ./.github/workflows/shared-ffmpeg-tests.yaml
     permissions:
       contents: read
 
-  test-pyav-binding:
+  python-tests:
     needs: build
-    uses: ./.github/workflows/test-pyav-binding.yaml
+    uses: ./.github/workflows/shared-python-tests.yaml
     permissions:
       contents: read
 
   publish:
-    needs: [extract-version, test-ffmpeg-binaries, test-pyav-binding]
+    needs: [extract-version, ffmpeg-tests, python-tests]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -87,12 +75,8 @@ jobs:
 
       - name: Tag and push Docker image
         run: |
-          # Tag the loaded image with all required tags
-          docker tag ffmpeg-lgpl:latest ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.full_version }}-lgpl
-          docker tag ffmpeg-lgpl:latest ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.major_minor }}-lgpl
-          docker tag ffmpeg-lgpl:latest ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.major }}-lgpl
+          # Tag the loaded image with full version
+          docker tag ffmpeg-lgpl:latest ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.version }}-lgpl
           
-          # Push all tags
-          docker push ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.full_version }}-lgpl
-          docker push ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.major_minor }}-lgpl
-          docker push ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.major }}-lgpl
+          # Push the tag
+          docker push ghcr.io/${{ github.repository_owner }}/ffmpeg:${{ needs.extract-version.outputs.version }}-lgpl
