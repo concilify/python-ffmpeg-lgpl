@@ -5,7 +5,9 @@ ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/ffmpeg/lib:/usr/local/lib"
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
     libvpx7 \
     libmp3lame0 \
     libopus0 \
