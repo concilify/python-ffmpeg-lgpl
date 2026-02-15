@@ -22,9 +22,10 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: |
-          # Remove the -lgpl suffix from the tag
-          VERSION=${GITHUB_REF_NAME%-lgpl}
+        run: |        
+          # Remove leading 'v' and trailing '-lgpl'
+          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${VERSION%-lgpl}"
           echo "full_version=$VERSION" >> $GITHUB_OUTPUT
 
           # Extract X.Y (major.minor)
