@@ -22,7 +22,7 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: |        
+        run: |
           # Remove leading 'v' and trailing '-lgpl'
           VERSION="${GITHUB_REF_NAME#v}"
           VERSION="${VERSION%-lgpl}"
@@ -32,8 +32,13 @@ jobs:
           MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
           echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
 
+          # Extract X (major only)
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+
           echo "Full version: $VERSION"
           echo "Major.Minor: $MAJOR_MINOR"
+          echo "Major: $MAJOR"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -53,9 +58,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ffmpeg
           tags: |
-            type=semver,pattern={{version}}-lgpl
-            type=semver,pattern={{major}}.{{minor}}-lgpl
-            type=semver,pattern={{major}}-lgpl
+            type=raw,value=${{ steps.version.outputs.full_version }}-lgpl
+            type=raw,value=${{ steps.version.outputs.major_minor }}-lgpl
+            type=raw,value=${{ steps.version.outputs.major }}-lgpl
           flavor: |
             latest=false
 
