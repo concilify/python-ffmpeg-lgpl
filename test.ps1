@@ -60,8 +60,9 @@ Write-Host "`nChecking build configuration..." -ForegroundColor Yellow
 $buildConfig = docker run --rm ffmpeg-tests:latest ffmpeg -version
 
 if ($buildConfig -match "--enable-gpl") {
-    Write-Host "✗ WARNING: GPL is enabled in the build!" -ForegroundColor Red
-    Write-Host "This build may not be LGPL compliant." -ForegroundColor Red
+    Write-Host "✗ ERROR: GPL is enabled in the build!" -ForegroundColor Red
+    Write-Host "This build is NOT LGPL compliant." -ForegroundColor Red
+    exit 1
 } else {
     Write-Host "✓ GPL is disabled - LGPL compliant" -ForegroundColor Green
 }
