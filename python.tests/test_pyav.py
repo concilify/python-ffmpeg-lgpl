@@ -52,19 +52,21 @@ try:
     print(f"Attempting to open: {test_url}")
     
     container = av.open(test_url, timeout=10.0)
-    print(f"✓ Successfully opened HTTPS stream")
-    print(f"✓ Stream duration: {container.duration / 1000000:.2f} seconds" if container.duration else "✓ Stream opened (duration unknown)")
-    print(f"✓ Number of streams: {len(container.streams)}")
-    
-    # List stream information
-    for stream in container.streams:
-        stream_type = stream.type
-        if hasattr(stream, 'codec_context'):
-            codec = stream.codec_context.name if stream.codec_context else 'unknown'
-            print(f"  - {stream_type} stream: {codec}")
-    
-    container.close()
-    print("✓ HTTPS/SSL support is working correctly")
+    try:
+        print(f"✓ Successfully opened HTTPS stream")
+        print(f"✓ Stream duration: {container.duration / 1000000:.2f} seconds" if container.duration else "✓ Stream opened (duration unknown)")
+        print(f"✓ Number of streams: {len(container.streams)}")
+        
+        # List stream information
+        for stream in container.streams:
+            stream_type = stream.type
+            if hasattr(stream, 'codec_context'):
+                codec = stream.codec_context.name if stream.codec_context else 'unknown'
+                print(f"  - {stream_type} stream: {codec}")
+        
+        print("✓ HTTPS/SSL support is working correctly")
+    finally:
+        container.close()
     
 except Exception as e:
     print(f"✗ Failed to open HTTPS stream: {e}")
