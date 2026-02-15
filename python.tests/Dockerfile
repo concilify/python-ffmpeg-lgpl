@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libvorbisenc2 \
     libass9 \
     libtheora0 \
+    libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy FFmpeg installation from ffmpeg binaries image

@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libvorbis-dev \
     libass-dev \
     libtheora-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -43,6 +44,7 @@ RUN ./configure \
     --enable-libvorbis \
     --enable-libass \
     --enable-libtheora \
+    --enable-openssl \
     --extra-version="lgpl"
 
 # Build FFmpeg with LGPL configuration
